@@ -1,0 +1,41 @@
+---
+title: "LobeChat"
+description: "在 LobeChat 中使用 KUNPO API 的所有模型。"
+---
+
+# LobeChat
+
+[LobeChat](https://lobehub.com) 是一个开源的 AI 聊天客户端，支持 OpenAI 兼容接口。
+
+## 配置步骤
+
+<Steps>
+  <Step title="打开模型服务商设置">
+    进入 LobeChat 设置 → **语言模型** → **OpenAI**。
+  </Step>
+
+  <Step title="填写连接信息">
+    | 字段 | 值 |
+    |------|------|
+    | API Base URL | `https://llm.ziy.cc/v1` |
+    | API Key | `sk-你的密钥` |
+  </Step>
+
+  <Step title="获取模型列表">
+    点击 **「获取模型列表」** 按钮，LobeChat 会自动拉取 KUNPO API 的全部可用模型。
+  </Step>
+
+  <Step title="开始对话">
+    在聊天界面选择模型，开始使用。
+  </Step>
+</Steps>
+
+<Tip>
+  LobeChat 支持自动拉取模型列表，你不需要手动添加每个模型。点击「获取模型列表」即可看到所有 150+ 可用模型。
+</Tip>
+
+---
+
+## 同时使用多个供应商
+
+LobeChat 支持配置多个模型供应商。你可以将 KUNPO API 作为 OpenAI 兼容供应商添加，同时保留其他已有配置。

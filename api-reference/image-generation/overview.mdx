@@ -1,0 +1,101 @@
+---
+title: "图片生成"
+description: "KUNPO 图片生成 API — 支持腾讯 AIART GI/GI2、GPT Image 2、Image-MI 多模型，兼容 OpenAI Images 接口格式。"
+---
+
+# 图片生成
+
+KUNPO 网关统一封装了腾讯 AIART 系列图片生成模型，兼容 OpenAI `images` 接口格式。一个 API Key 即可调用多种图片生成模型，无需关心上游鉴权细节。
+
+## 支持模型
+
+| 模型名 | 说明 | 典型耗时 |
+|--------|------|----------|
+| `Image-GI` | 腾讯 AIART 文生图 | 30-60 秒 |
+| `Image-GI2` | 腾讯 AIART 文生图 v2 | 30-60 秒 |
+| `Image-GPT2` | 腾讯 GPT Image 2 | 数分钟 |
+| `Image-MI` | 腾讯 AIART MI 文生图（MJ 风格，一次返回 4 张） | 30-60 秒 |
+
+<Note>
+  `Image-MI` 仅支持文生图（`model` + `prompt`），`size`、`quality`、`images` 等参数对其无效。固定 **0.5 元/次** 计费。
+</Note>
+
+## 接入方式
+
+<CardGroup cols={2}>
+  <Card title="同步接口" href="/api-reference/image-generation/synchronous">
+    `POST /v1/images/generations` — 提交后等待完成，直接返回图片 URL。适合 GI/GI2/Image-MI。
+  </Card>
+
+  <Card title="异步接口" href="/api-reference/image-generation/asynchronous">
+    `POST /v1/images/tasks` 提交 → `GET /v1/images/tasks/:task_id` 查询。适合 Image-GPT2 等长耗时模型。
+  </Card>
+</CardGroup>
+
+## 认证
+
+```
+Authorization: Bearer sk-你的密钥
+```
+
+## 图片存储
+
+生成的图片自动转存至 KUNPO 图床（COS），返回永久 CDN 链接（`https://kunpoapiimg.ziy.cc/...`），不受上游临时 URL 过期限制。
+
+## 请求参数
+
+### 通用参数
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|:----:|------|
+| `model` | string | **是** | 模型名称：`Image-GI`、`Image-GI2`、`Image-GPT2`、`Image-MI` |
+| `prompt` | string | **是** | 图片描述文本 |
+| `size` | string | 否 | 图片尺寸。仅控制宽高比，**不保证输出像素与传入值一致**，详见下方映射规则 |
+| `quality` | string | 否 | 图片质量。GI 映射为分辨率，GPT 映射为质量等级 |
+| `response_format` | string | 否 | 目前仅支持 `url`（默认），传入 `b64_json` 仍返回 URL |
+| `images` | string[] | 否 | 参考图 URL 数组，用于图生图 |
+| `image` | string | 否 | 单张参考图（URL 或 Base64），系统自动处理上传 |
+
+### GPT 专属参数
+
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| `background` | string | 背景描述 |
+| `output_format` | string | 输出格式，默认 `png` |
+| `input_fidelity` | string | `high` 或 `low` |
+
+### `size` 映射规则
+
+<Warning>
+  **关于输出尺寸：** `size` 参数仅用于指定**宽高比**，生成的图片实际像素尺寸**不会严格等于**传入值。模型会根据内部算法自适应输出分辨率，最终尺寸以实际返回的图片为准。
+</Warning>
+
+| `size` 值 | GI 模型（宽高比） | GPT 模型 |
+|-----------|:-----------------:|:--------:|
+| `1024x1024` / 空 | 1:1 | 1024x1024 |
+| `1536x1024` / `1792x1024` / `1280x720` | 16:9 | — |
+| `1024x1536` / `1024x1792` / `720x1280` | 9:16 | 1024x1536 |
+| `auto` | — | auto |
+| 其它 | 回落 1:1 | 回落 1024x1024 |
+
+### `quality` 映射规则
+
+| `quality` 值 | GI 模型（分辨率） | GPT 模型 |
+|-------------|:-----------------:|:--------:|
+| `hd` / `high` | 4K | high |
+| `medium` / `2k` | 2K | — |
+| `low` | 1K | low |
+| 默认 / 空 | 1K | medium |
+
+## 计费说明
+
+| 模型 | 计费方式 | 1K 参考 | 2K/4K 参考 |
+|------|----------|:-------:|:----------:|
+| `Image-GI` | Token 计费 | ~$0.123 | ~$0.184 |
+| `Image-GI2` | Token 计费 | ~$0.061 | ~$0.092 |
+| `Image-GPT2` | Token 计费 | ~$0.031 | ~$0.046 |
+| `Image-MI` | 按次计费 0.5 元/次 | — | — |
+
+<Tip>
+  以上价格仅供参考，实际计费请以控制台模型市场中的实时价格为准。
+</Tip>

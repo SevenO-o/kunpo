@@ -1,0 +1,93 @@
+---
+title: "Claude Code"
+description: "Claude Code 客户端接入指南 — 通过环境变量或配置文件接入 KUNPO API。"
+---
+
+# Claude Code
+
+Claude Code 是 Anthropic 官方的 AI 编程助手，支持通过自定义 API 端点接入第三方网关。
+
+<Warning>
+  `ANTHROPIC_BASE_URL` 必须设为 `https://llm.ziy.cc`，**不要**加 `/v1` 后缀。Claude Code 会自动拼接路径。
+</Warning>
+
+## 配置方法
+
+<AccordionGroup>
+  <Accordion title="环境变量（推荐）">
+    在终端中设置以下环境变量：
+
+    ```bash
+    export ANTHROPIC_BASE_URL=https://llm.ziy.cc
+    export ANTHROPIC_AUTH_TOKEN=sk-你的密钥
+    ```
+
+    然后正常启动 Claude Code：
+
+    ```bash
+    claude
+    ```
+
+    <Tip>
+      将上述 `export` 命令添加到 `~/.zshrc` 或 `~/.bashrc` 中，避免每次手动设置。
+    </Tip>
+  </Accordion>
+
+  <Accordion title="配置文件">
+    编辑 Claude Code 的配置文件 `~/.claude/settings.json`：
+
+    ```json
+    {
+      "env": {
+        "ANTHROPIC_BASE_URL": "https://llm.ziy.cc",
+        "ANTHROPIC_AUTH_TOKEN": "sk-你的密钥",
+        "ANTHROPIC_MODEL": "anthropic/claude-sonnet-4.6",
+        "ANTHROPIC_DEFAULT_SONNET_MODEL": "anthropic/claude-sonnet-4.6",
+        "ANTHROPIC_DEFAULT_OPUS_MODEL": "anthropic/claude-opus-4.6",
+        "ANTHROPIC_DEFAULT_HAIKU_MODEL": "anthropic/claude-haiku-4.5"
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## 可用模型
+
+通过 KUNPO 网关使用 Claude Code 时，模型名使用 `anthropic/` 前缀格式：
+
+| 环境变量 | 推荐值 | 说明 |
+|----------|--------|------|
+| `ANTHROPIC_MODEL` | `anthropic/claude-sonnet-4.6` | 默认模型 |
+| `ANTHROPIC_DEFAULT_SONNET_MODEL` | `anthropic/claude-sonnet-4.6` | Sonnet 系列 |
+| `ANTHROPIC_DEFAULT_OPUS_MODEL` | `anthropic/claude-opus-4.6` | Opus 系列 |
+| `ANTHROPIC_DEFAULT_HAIKU_MODEL` | `anthropic/claude-haiku-4.5` | Haiku 系列 |
+
+---
+
+## 常见问题
+
+### 报错 404 Not Found
+
+检查 `ANTHROPIC_BASE_URL` 是否多加了 `/v1`：
+
+```bash
+# ✅ 正确
+ANTHROPIC_BASE_URL=https://llm.ziy.cc
+
+# ❌ 错误
+ANTHROPIC_BASE_URL=https://llm.ziy.cc/v1
+```
+
+### 响应很慢或超时
+
+Claude Code 发送大上下文（3 万+ tokens）时，上游处理可能需要 15-30 秒，这是正常现象。如果持续超时，请检查网络连接或联系管理员。
+
+### 如何切换模型？
+
+在 Claude Code 中使用 `/model` 命令切换，或通过环境变量 `ANTHROPIC_MODEL` 指定：
+
+```bash
+export ANTHROPIC_MODEL=anthropic/claude-opus-4.6
+```

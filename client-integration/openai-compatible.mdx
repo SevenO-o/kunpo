@@ -1,0 +1,86 @@
+---
+title: "通用 OpenAI 兼容客户端"
+description: "在任何支持 OpenAI API 的工具中使用 KUNPO API 的所有模型。"
+---
+
+# 通用 OpenAI 兼容客户端
+
+KUNPO API 完全兼容 OpenAI 接口格式。任何支持自定义 OpenAI API 端点的工具都可以直接接入。
+
+## 连接信息
+
+| 字段 | 值 |
+|------|------|
+| API Base URL | `https://llm.ziy.cc/v1` |
+| API Key | `sk-你的密钥`（从后台获取） |
+
+---
+
+## 代码示例
+
+<CodeGroup>
+  ```python Python (OpenAI SDK)
+  from openai import OpenAI
+
+  client = OpenAI(
+      base_url="https://llm.ziy.cc/v1",
+      api_key="sk-你的密钥"
+  )
+
+  response = client.chat.completions.create(
+      model="anthropic/claude-sonnet-4.6",
+      messages=[{"role": "user", "content": "你好"}]
+  )
+
+  print(response.choices[0].message.content)
+  ```
+
+  ```javascript Node.js (OpenAI SDK)
+  import OpenAI from "openai";
+
+  const client = new OpenAI({
+    baseURL: "https://llm.ziy.cc/v1",
+    apiKey: "sk-你的密钥",
+  });
+
+  const response = await client.chat.completions.create({
+    model: "anthropic/claude-sonnet-4.6",
+    messages: [{ role: "user", content: "你好" }],
+  });
+
+  console.log(response.choices[0].message.content);
+  ```
+
+  ```bash 环境变量
+  export OPENAI_API_BASE=https://llm.ziy.cc/v1
+  export OPENAI_API_KEY=sk-你的密钥
+  ```
+</CodeGroup>
+
+---
+
+## 模型命名规则
+
+使用 OpenAI 兼容格式时，模型名遵循以下规则：
+
+| 类型 | 格式 | 示例 |
+|------|------|------|
+| 海外模型 | `供应商/模型名` | `anthropic/claude-sonnet-4.6`、`openai/gpt-5.4`、`google/gemini-2.5-pro` |
+| 国内模型 | 直接使用名称 | `DeepSeek-R1`、`Qwen3`、`GLM-4` |
+
+---
+
+## 已验证的客户端
+
+以下客户端均已验证可正常接入 KUNPO API：
+
+- Claude Code
+- LobeChat
+- Cherry Studio
+- Open WebUI
+- ChatBox
+- BoltAI
+
+<Tip>
+  只要你的工具支持自定义 OpenAI API 端点，就可以接入 KUNPO。配置方式请参考对应工具的文档。
+</Tip>

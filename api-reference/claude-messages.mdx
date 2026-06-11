@@ -1,0 +1,157 @@
+---
+title: "Claude Messages API"
+description: "Anthropic 原生 Messages 接口"
+---
+
+# Claude Messages API
+
+```
+POST https://llm.ziy.cc/v1/messages
+```
+
+除了 OpenAI 兼容格式，KUNPO API 同时支持 Anthropic 原生 Messages API，适用于需要使用 Claude 专属功能（如 Extended Thinking）的场景。
+
+<Note>
+  Anthropic 原生接口的路径是 `/v1/messages`，与 Chat Completions 的 `/v1/chat/completions` 不同，请注意区分。
+</Note>
+
+## 认证
+
+Anthropic 格式使用相同的 KUNPO API Key，放在 `Authorization` 头中：
+
+```
+Authorization: Bearer sk-你的密钥
+```
+
+同时需要添加 Anthropic 版本头：
+
+```
+anthropic-version: 2023-06-01
+```
+
+## 请求示例
+
+<CodeGroup>
+  ```bash cURL
+  curl -X POST https://llm.ziy.cc/v1/messages \
+    -H "Authorization: Bearer sk-你的密钥" \
+    -H "anthropic-version: 2023-06-01" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "model": "Claude-Sonnet-4.6",
+      "max_tokens": 1024,
+      "messages": [
+        {"role": "user", "content": "解释什么是 Transformer 架构"}
+      ]
+    }'
+  ```
+
+  ```python Python (Anthropic SDK)
+  import anthropic
+
+  client = anthropic.Anthropic(
+      base_url="https://llm.ziy.cc",
+      api_key="sk-你的密钥"
+  )
+
+  message = client.messages.create(
+      model="Claude-Sonnet-4.6",
+      max_tokens=1024,
+      messages=[
+          {"role": "user", "content": "解释什么是 Transformer 架构"}
+      ]
+  )
+
+  print(message.content[0].text)
+  ```
+</CodeGroup>
+
+## 响应格式
+
+```json
+{
+  "id": "msg_xxxxx",
+  "type": "message",
+  "role": "assistant",
+  "model": "Claude-Sonnet-4.6",
+  "content": [
+    {
+      "type": "text",
+      "text": "Transformer 是一种基于自注意力机制的神经网络架构..."
+    }
+  ],
+  "stop_reason": "end_turn",
+  "usage": {
+    "input_tokens": 15,
+    "output_tokens": 234
+  }
+}
+```
+
+## 可用模型
+
+Anthropic 原生格式支持以下模型：
+
+| 模型名 | 说明 |
+|--------|------|
+| `Claude-Sonnet-4.6` | Claude Sonnet 4.6，性价比最高 |
+| `claude-opus-4.6` | Claude Opus 4.6，最强推理能力 |
+| `claude-haiku-4.5` | Claude Haiku 4.5，速度最快 |
+
+<Note>
+  使用 Anthropic 原生格式时，模型名**不需要** `anthropic/` 前缀。直接使用如 `Claude-Sonnet-4.6` 的格式即可。
+</Note>
+
+### DeepSeek 兼容模型（`c/` 前缀）
+
+`c/` 前缀表示 Claude 兼容——客户端使用 Anthropic 原生协议访问，但实际底层模型为 DeepSeek。
+
+| 模型名 | 说明 |
+|--------|------|
+| `c/deepseek-v3-2` | 通用定位，成本极低，适合大批量任务 |
+| `c/deepseek-v4-flash` | 快速定位，支持缓存，吞吐高（~52 tps） |
+| `c/deepseek-v4-pro` | 强力定位，综合能力更强 |
+
+调用示例：
+
+```bash
+curl -X POST https://llm.ziy.cc/v1/messages \
+  -H "Authorization: Bearer sk-你的密钥" \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "c/deepseek-v4-pro",
+    "max_tokens": 4096,
+    "messages": [
+      {"role": "user", "content": "帮我分析这段代码的时间复杂度：def merge_sort(arr): ..."}
+    ]
+  }'
+```
+
+<Tip>
+  `c/deepseek-v4-flash` 支持缓存（cache），在重复前缀或长 system prompt 场景下可以显著降低成本。
+</Tip>
+
+#### 选择建议
+
+| 场景 | 推荐模型 | 原因 |
+|------|----------|------|
+| 大批量简单任务 | `c/deepseek-v3-2` | 成本最低 |
+| 日常对话、通用推理 | `c/deepseek-v4-pro` | 综合能力更强 |
+| 高吞吐、长 prompt | `c/deepseek-v4-flash` | 支持缓存 + 高吞吐 |
+
+## Chat Completions 格式 vs Messages 格式
+
+两种格式有什么区别？
+
+| 对比项 | Chat Completions | Messages API |
+|--------|-----------------|--------------|
+| 路径 | `/v1/chat/completions` | `/v1/messages` |
+| 模型名 | `anthropic/Claude-Sonnet-4.6` | `Claude-Sonnet-4.6` |
+| 生态兼容 | 所有 OpenAI 兼容工具 | Anthropic SDK / Claude Code |
+| 特殊功能 | — | Extended Thinking、Tool Use 原生支持 |
+
+**选择建议**：
+
+- 通用场景、多模型切换 → 使用 Chat Completions
+- Claude Code / Anthropic SDK / Claude 专属功能 → 使用 Messages API

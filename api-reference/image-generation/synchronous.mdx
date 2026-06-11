@@ -1,0 +1,179 @@
+---
+title: "同步接口"
+description: "POST /v1/images/generations 同步生成图片，兼容 OpenAI Images API 格式。"
+---
+
+# 同步图片生成
+
+```
+POST https://llm.ziy.cc/v1/images/generations
+```
+
+提交图片生成任务并同步等待结果返回。网关提交后每 2 秒轮询，直至完成（最长约 15 分钟）。
+
+## 请求参数
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|:----:|------|
+| `model` | string | **是** | `Image-GI`、`Image-GI2`、`Image-GPT2`、`Image-MI` |
+| `prompt` | string | **是** | 图片描述文本 |
+| `size` | string | 否 | 图片尺寸，仅控制宽高比，**不保证输出像素与传入值一致**，详见 [概览页参数映射](/api-reference/image-generation/overview) |
+| `quality` | string | 否 | 图片质量 |
+| `response_format` | string | 否 | 目前仅支持 `url`（默认），传入 `b64_json` 仍返回 URL |
+| `images` | string[] | 否 | 参考图 URL 数组（图生图） |
+| `image` | string | 否 | 单张参考图（URL 或 Base64） |
+| `background` | string | 否 | 背景描述（GPT 专属） |
+| `output_format` | string | 否 | 输出格式，默认 `png`（GPT 专属） |
+| `input_fidelity` | string | 否 | `high` 或 `low`（GPT 专属） |
+
+## 响应格式
+
+```json
+{
+  "created": 1715689600,
+  "data": [
+    { "url": "https://kunpoapiimg.ziy.cc/..." }
+  ]
+}
+```
+
+| 字段 | 说明 |
+|------|------|
+| `created` | 请求创建时间戳 |
+| `data[].url` | 图片永久 CDN 地址 |
+
+## 示例
+
+<CodeGroup>
+  ```bash cURL
+  curl -X POST https://llm.ziy.cc/v1/images/generations \
+    -H "Authorization: Bearer sk-你的密钥" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "model": "Image-GI2",
+      "prompt": "赛博朋克风格的武汉长江大桥夜景",
+      "size": "1536x1024",
+      "quality": "high"
+    }'
+  ```
+
+  ```python Python
+  import requests
+
+  resp = requests.post(
+      "https://llm.ziy.cc/v1/images/generations",
+      headers={"Authorization": "Bearer sk-你的密钥"},
+      json={
+          "model": "Image-GI2",
+          "prompt": "赛博朋克风格的武汉长江大桥夜景",
+          "size": "1536x1024",
+          "quality": "high"
+      }
+  )
+
+  url = resp.json()["data"][0]["url"]
+  print(f"图片地址: {url}")
+  ```
+
+  ```javascript Node.js
+  const resp = await fetch("https://llm.ziy.cc/v1/images/generations", {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer sk-你的密钥",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "Image-GI2",
+      prompt: "赛博朋克风格的武汉长江大桥夜景",
+      size: "1536x1024",
+      quality: "high",
+    }),
+  });
+
+  const { data } = await resp.json();
+  console.log(`图片地址: ${data[0].url}`);
+  ```
+
+  ```python Python (OpenAI SDK)
+  from openai import OpenAI
+
+  client = OpenAI(
+      base_url="https://llm.ziy.cc/v1",
+      api_key="sk-你的密钥"
+  )
+
+  response = client.images.generate(
+      model="Image-GI2",
+      prompt="赛博朋克风格的武汉长江大桥夜景",
+      size="1536x1024",
+      quality="high"
+  )
+
+  print(response.data[0].url)
+  ```
+</CodeGroup>
+
+<AccordionGroup>
+  <Accordion title="Image-GPT2 文生图">
+    ```bash
+    curl -X POST https://llm.ziy.cc/v1/images/generations \
+      -H "Authorization: Bearer sk-你的密钥" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "Image-GPT2",
+        "prompt": "扁平插画，一杯咖啡",
+        "size": "1024x1536",
+        "quality": "medium",
+        "response_format": "b64_json",
+        "output_format": "png"
+      }'
+    ```
+
+    <Note>
+      即使传入 `"response_format": "b64_json"`，Image-GPT2 实际返回的仍然是图片 URL，而非 Base64 数据。
+    </Note>
+  </Accordion>
+
+  <Accordion title="图生图（参考图 URL）">
+    ```bash
+    curl -X POST https://llm.ziy.cc/v1/images/generations \
+      -H "Authorization: Bearer sk-你的密钥" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "Image-GI",
+        "prompt": "保持构图，改为水彩风格",
+        "images": ["https://example.com/ref.png"]
+      }'
+    ```
+  </Accordion>
+
+  <Accordion title="Image-MI 文生图（一次返回 4 张）">
+    ```bash
+    curl -X POST https://llm.ziy.cc/v1/images/generations \
+      -H "Authorization: Bearer sk-你的密钥" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "Image-MI",
+        "prompt": "一只可爱的橘猫坐在窗台上，阳光照射，写实风格"
+      }'
+    ```
+
+    响应（`data` 数组含 4 项）：
+
+    ```json
+    {
+      "created": 1715689600,
+      "data": [
+        { "url": "https://kunpoapiimg.ziy.cc/...1" },
+        { "url": "https://kunpoapiimg.ziy.cc/...2" },
+        { "url": "https://kunpoapiimg.ziy.cc/...3" },
+        { "url": "https://kunpoapiimg.ziy.cc/...4" }
+      ]
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+<Warning>
+  同步接口最长等待约 15 分钟。Image-GPT2 等模型可能耗时数分钟，长耗时模型建议使用 [异步接口](/api-reference/image-generation/asynchronous)。
+</Warning>

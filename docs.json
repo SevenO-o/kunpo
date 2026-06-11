@@ -1,0 +1,61 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "maple",
+  "name": "KUNPO API",
+  "colors": {
+    "primary": "#6366f1"
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "文档",
+        "groups": [
+          {
+            "group": "开始",
+            "pages": [
+              "index",
+              "quick-start"
+            ]
+          },
+          {
+            "group": "API 接口",
+            "pages": [
+              "api-reference/text-chat",
+              "api-reference/claude-messages",
+              {
+                "group": "图片生成",
+                "pages": [
+                  "api-reference/image-generation/overview",
+                  "api-reference/image-generation/synchronous",
+                  "api-reference/image-generation/asynchronous"
+                ]
+              },
+              "api-reference/doubao-video"
+            ]
+          },
+          {
+            "group": "客户端接入",
+            "pages": [
+              "client-integration/claude-code",
+              "client-integration/lobechat",
+              "client-integration/openai-compatible"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "GitHub",
+        "href": "https://github.com/kunpo"
+      }
+    ]
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/kunpo"
+    }
+  }
+}

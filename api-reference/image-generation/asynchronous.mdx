@@ -1,0 +1,212 @@
+---
+title: "异步接口"
+description: "通过异步任务方式生成图片 — 提交任务获取 task_id，轮询查询结果。适合 Image-GPT2 等长耗时模型。"
+---
+
+# 异步图片生成
+
+异步接口适用于耗时较长的图片生成任务。提交后立即返回任务 ID，服务端定时轮询上游状态，客户端可随时查询进度和结果。
+
+## 提交任务
+
+```
+POST https://llm.ziy.cc/v1/images/tasks
+```
+
+### 请求参数
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|:----:|------|
+| `model` | string | **是** | `Image-GI`、`Image-GI2`、`Image-GPT2`、`Image-MI` |
+| `prompt` | string | **是** | 图片描述文本 |
+| `size` | string | 否 | 图片尺寸 |
+| `images` | string[] | 否 | 参考图 URL 数组（图生图） |
+| `metadata` | object | 否 | 附加参数：`quality`、`output_format`、`background`、`input_fidelity` 等 |
+
+### 提交响应
+
+```json
+{
+  "id": "task_xxxxxxxxxxxx",
+  "task_id": "task_xxxxxxxxxxxx",
+  "model": "Image-GPT2",
+  "status": "submitted",
+  "created_at": 1715689600
+}
+```
+
+| 字段 | 说明 |
+|------|------|
+| `task_id` | 任务 ID，用于后续查询 |
+| `status` | 初始状态，固定为 `submitted` |
+| `created_at` | 创建时间戳 |
+
+### 示例
+
+<CodeGroup>
+  ```bash cURL
+  curl -X POST https://llm.ziy.cc/v1/images/tasks \
+    -H "Authorization: Bearer sk-你的密钥" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "model": "Image-GPT2",
+      "prompt": "高清产品摄影，蓝牙耳机",
+      "size": "1536x1024",
+      "metadata": { "quality": "high" }
+    }'
+  ```
+
+  ```python Python
+  import requests
+
+  resp = requests.post(
+      "https://llm.ziy.cc/v1/images/tasks",
+      headers={"Authorization": "Bearer sk-你的密钥"},
+      json={
+          "model": "Image-GPT2",
+          "prompt": "高清产品摄影，蓝牙耳机",
+          "size": "1536x1024",
+          "metadata": {"quality": "high"}
+      }
+  )
+
+  task_id = resp.json()["task_id"]
+  print(f"任务已提交: {task_id}")
+  ```
+
+  ```javascript Node.js
+  const resp = await fetch("https://llm.ziy.cc/v1/images/tasks", {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer sk-你的密钥",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "Image-GPT2",
+      prompt: "高清产品摄影，蓝牙耳机",
+      size: "1536x1024",
+      metadata: { quality: "high" },
+    }),
+  });
+
+  const { task_id } = await resp.json();
+  console.log(`任务已提交: ${task_id}`);
+  ```
+</CodeGroup>
+
+---
+
+## 查询任务
+
+```
+GET https://llm.ziy.cc/v1/images/tasks/:task_id
+```
+
+### 查询响应
+
+```json
+{
+  "code": "success",
+  "data": {
+    "task_id": "task_xxxxxxxxxxxx",
+    "status": "SUCCESS",
+    "result_url": "https://kunpoapiimg.ziy.cc/...",
+    "fail_reason": ""
+  }
+}
+```
+
+| 字段 | 说明 |
+|------|------|
+| `data.task_id` | 任务 ID |
+| `data.status` | 任务状态（见下表） |
+| `data.result_url` | 图片永久 CDN URL（仅 `SUCCESS` 时可用） |
+| `data.fail_reason` | 失败原因（仅 `FAILURE` 时有值） |
+
+### 任务状态
+
+| 状态 | 说明 |
+|------|------|
+| `submitted` / `QUEUED` | 已提交，等待处理 |
+| `IN_PROGRESS` | 生成中 |
+| `SUCCESS` | 完成，`result_url` 可用 |
+| `FAILURE` | 失败，查看 `fail_reason` |
+
+### 查询示例
+
+<CodeGroup>
+  ```bash cURL
+  curl -X GET https://llm.ziy.cc/v1/images/tasks/task_xxxxxxxxxxxx \
+    -H "Authorization: Bearer sk-你的密钥"
+  ```
+
+  ```python Python
+  import requests
+
+  resp = requests.get(
+      "https://llm.ziy.cc/v1/images/tasks/task_xxxxxxxxxxxx",
+      headers={"Authorization": "Bearer sk-你的密钥"}
+  )
+
+  data = resp.json()["data"]
+  print(f"状态: {data['status']}")
+  if data["status"] == "SUCCESS":
+      print(f"图片地址: {data['result_url']}")
+  ```
+
+  ```javascript Node.js
+  const resp = await fetch(
+    "https://llm.ziy.cc/v1/images/tasks/task_xxxxxxxxxxxx",
+    { headers: { Authorization: "Bearer sk-你的密钥" } }
+  );
+
+  const { data } = await resp.json();
+  console.log(`状态: ${data.status}`);
+  if (data.status === "SUCCESS") {
+    console.log(`图片地址: ${data.result_url}`);
+  }
+  ```
+</CodeGroup>
+
+<Tip>
+  建议每 10-15 秒轮询一次，直到 `status` 变为 `SUCCESS` 或 `FAILURE`。
+</Tip>
+
+---
+
+## 完整异步工作流（Python）
+
+```python
+import time
+import requests
+
+BASE_URL = "https://llm.ziy.cc"
+HEADERS = {"Authorization": "Bearer sk-你的密钥"}
+
+def generate_image(prompt, model="Image-GPT2", size="1536x1024"):
+    """提交异步图片生成任务并轮询至完成。"""
+    # 提交任务
+    resp = requests.post(f"{BASE_URL}/v1/images/tasks", headers=HEADERS, json={
+        "model": model, "prompt": prompt, "size": size,
+        "metadata": {"quality": "high"}
+    })
+    task_id = resp.json()["task_id"]
+    print(f"任务已提交: {task_id}")
+
+    # 轮询结果
+    while True:
+        resp = requests.get(f"{BASE_URL}/v1/images/tasks/{task_id}", headers=HEADERS)
+        data = resp.json()["data"]
+        status = data["status"]
+
+        if status == "SUCCESS":
+            print(f"图片地址: {data['result_url']}")
+            return data["result_url"]
+        elif status == "FAILURE":
+            raise Exception(f"生成失败: {data['fail_reason']}")
+
+        time.sleep(15)
+
+# 使用示例
+url = generate_image("赛博朋克风格的未来城市夜景，霓虹灯闪烁")
+```
