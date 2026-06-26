@@ -7,6 +7,10 @@ description: "通过异步任务方式生成图片 — 提交任务获取 task_i
 
 异步接口适用于耗时较长的图片生成任务。提交后立即返回任务 ID，服务端定时轮询上游状态，客户端可随时查询进度和结果。
 
+<Note>
+  `model` 参数与对应产品名称：`Image-GI`（Nano Banana Pro）、`Image-GI2`（Nano Banana 2）、`Image-GPT2`（GPT Image 2）、`Image-MI`（Midjourney）。详见 [图片生成概览](/api-reference/image-generation/overview#支持模型)。
+</Note>
+
 ## 提交任务
 
 ```

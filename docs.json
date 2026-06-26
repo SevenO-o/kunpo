@@ -3,7 +3,9 @@
   "theme": "maple",
   "name": "KUNPO API",
   "colors": {
-    "primary": "#6366f1"
+    "primary": "#2AB1D4",
+    "light": "#52C8E8",
+    "dark": "#1A9DBA"
   },
   "navigation": {
     "tabs": [
@@ -20,6 +22,7 @@
           {
             "group": "API 接口",
             "pages": [
+              "api-reference/overview",
               "api-reference/text-chat",
               "api-reference/claude-messages",
               {
@@ -37,6 +40,7 @@
             "group": "客户端接入",
             "pages": [
               "client-integration/claude-code",
+              "client-integration/cc-switch",
               "client-integration/lobechat",
               "client-integration/openai-compatible"
             ]
@@ -44,18 +48,5 @@
         ]
       }
     ]
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "GitHub",
-        "href": "https://github.com/kunpo"
-      }
-    ]
-  },
-  "footer": {
-    "socials": {
-      "github": "https://github.com/kunpo"
-    }
   }
 }

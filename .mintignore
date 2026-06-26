@@ -1,0 +1,11 @@
+# 静态导出产物，避免 export 时嵌套打包
+kunpo-api-docs-export/
+kunpo-api-docs-export*/
+*.zip
+
+# 导出脚本（仅开发用）
+scripts/
+
+# 维护文档（非对外站点内容）
+DOCS_MAINTENANCE.md
+PROJECT_CONTEXT.md

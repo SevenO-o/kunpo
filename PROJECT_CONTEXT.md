@@ -1,6 +1,7 @@
 # KUNPO API 文档项目上下文
 
 > 本文档供 AI 助手阅读，以便快速理解项目全貌并继续维护文档。
+> **编辑文档前务必先读 [DOCS_MAINTENANCE.md](./DOCS_MAINTENANCE.md)**（防重复、模型名、页面职责的完整规范）。
 > 最后更新：2026-06-11
 
 ---
@@ -32,6 +33,7 @@ docs/
 ├── index.mdx                                  # 首页：热门模型卡片 + 核心能力 + 接入方式
 ├── quick-start.mdx                            # 快速开始：获取 Key → 第一个请求 → 流式输出
 ├── api-reference/
+│   ├── overview.mdx                           # API 总览索引
 │   ├── text-chat.mdx                          # 文本对话 (Chat Completions)
 │   ├── claude-messages.mdx                    # Claude Messages API (Anthropic 原生)
 │   ├── doubao-video.mdx                       # 豆包视频生成 (Seedance 2.0)
@@ -52,7 +54,7 @@ docs/
 | 分组 | 页面 |
 |------|------|
 | 开始 | index, quick-start |
-| API 接口 | text-chat, claude-messages, image-generation/*, doubao-video |
+| API 接口 | overview, text-chat, claude-messages, image-generation/*, doubao-video |
 | 客户端接入 | claude-code, lobechat, openai-compatible |
 
 ---
@@ -84,15 +86,14 @@ POST https://llm.ziy.cc/v1/chat/completions
 ## 各页面当前状态
 
 ### index.mdx（首页）
-- 热门模型卡片：Gemini 2.5 Pro、Claude Sonnet 4.6、DeepSeek-R1
-- 核心能力卡片：文本对话、图片生成、Claude 原生
-- 接入方式卡片：快速开始、Claude Code、LobeChat、通用客户端
-- 基础信息表格：API 地址、兼容格式、模型数量等
+- 热门模型卡片：Gemini 3.1 Flash Lite、Claude Sonnet 4.6、DeepSeek-R1（链到 quick-start 锚点）
+- 图片生成卡片：对外展示 Nano Banana Pro / Nano Banana 2 / GPT Image 2 / Midjourney（API 调用仍用 Image-GI 等代号）
+- 无 GitHub 等占位外链
 
 ### quick-start.mdx（快速开始）
-- 代码示例标签：Gemini 2.5 Pro / DeepSeek-R1 / Python / Node.js
-- 流式输出示例：cURL + Python
-- 可用模型表格：按供应商列出模型前缀
+- 示例模型：`google/gemini-3.1-flash-lite`、`DeepSeek-R1-0528`
+- DeepSeek Note：说明 `reasoning_content` 字段
+- 锚点：`#gemini-3-1-flash-lite`、`#deepseek-r1-0528`
 
 ### text-chat.mdx（文本对话）
 - 接口地址以代码块展示：`POST https://llm.ziy.cc/v1/chat/completions`
@@ -115,12 +116,8 @@ POST https://llm.ziy.cc/v1/chat/completions
 - Chat Completions vs Messages 对比表
 
 ### image-generation/overview.mdx（图片生成概览）
-- 支持模型：Image-GI、Image-GI2、Image-GPT2、Image-MI
-- `response_format` 说明：目前仅支持 `url`（默认），传入 `b64_json` 仍返回 URL
-- GPT 专属参数：background、output_format、input_fidelity
-- size 映射规则表（GI 宽高比 / GPT 像素）
-- quality 映射规则表
-- 计费说明表 + Tip 提示仅供参考
+- 支持模型表含「API 模型名 ↔ 对应名称」：Nano Banana Pro / Nano Banana 2 / GPT Image 2 / Midjourney
+- 模型选择建议表、按次计费表（唯一维护位置）
 
 ### image-generation/synchronous.mdx（同步接口）
 - 接口：`POST https://llm.ziy.cc/v1/images/generations`
@@ -167,10 +164,10 @@ POST https://llm.ziy.cc/v1/chat/completions
 3. **Claude 模型名**：
    - Anthropic 原生格式（Messages API）：不带前缀，如 `Claude-Sonnet-4.6`
    - OpenAI 兼容格式（Chat Completions）：带前缀，如 `anthropic/claude-sonnet-4.6`
-4. **DeepSeek 模型名**：已统一为 `DeepSeek-R1`（原 `DeepSeek-R1-0528` 已全部替换）
-5. **图片生成 response_format**：文档明确说明传入 `b64_json` 仍返回 URL，示例中保留该参数并加 Note 提醒
-6. **客户端接入**：已移除 Cursor 接入说明
-7. **docs.json 不设 baseUrl**：避免搜索功能出现 "Not available on local preview" 提示
+4. **DeepSeek 模型名**：quick-start / text-chat 示例用 `DeepSeek-R1-0528`；首页卡片标题仍为 DeepSeek-R1
+5. **图片生成**：参数映射/计费只在 overview 维护；sync/async 不重复
+6. **图片 response_format**：传入 `b64_json` 仍返回 CDN URL
+7. **docs.json**：无 navbar/footer GitHub 占位链接
 
 ---
 
@@ -190,9 +187,9 @@ POST https://llm.ziy.cc/v1/chat/completions
 cd /Users/kunpo/Projects/work/doc/docs
 npx mintlify dev --port 3333
 
-# 导出静态 HTML
-npx mintlify export
-# 输出：docs/export.zip
+# 导出静态 HTML 到项目目录
+rm -rf kunpo-api-docs-export
+mintlify export --output /tmp/export.zip && unzip -q /tmp/export.zip -d kunpo-api-docs-export
 ```
 
 ---

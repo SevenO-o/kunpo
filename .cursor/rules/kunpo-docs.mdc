@@ -1,0 +1,36 @@
+---
+description: KUNPO API 文档维护规范 — 编辑 MDX/docs.json 时避免重复与不一致
+globs: docs/**/*.{mdx,json,md}
+alwaysApply: false
+---
+
+# KUNPO 文档编辑规则
+
+编辑前先阅读 `DOCS_MAINTENANCE.md`（完整规范）。
+
+## 核心原则
+
+1. **单一信息源**：参数表、模型表、计费表、错误码只在一处完整维护，其他页面用链接引用
+2. **改模型名必全局 grep**：`.mdx` 文件中搜索旧名称，确保 index / quick-start / api-reference 同步
+3. **示例必须可用**：禁止 `example.com` 占位图；quick-start 只用已验证模型（见 DOCS_MAINTENANCE.md §2）
+4. **最小改动**：不扩写未请求的内容；不加 navbar/footer 外链；不重复已有 Accordion/CodeGroup 示例
+
+## 页面职责速记
+
+| 只在这里写完整内容 | 文件 |
+|-------------------|------|
+| API 索引 | `api-reference/overview.mdx` |
+| 文本对话参数 | `api-reference/text-chat.mdx` |
+| 图片模型/计费/映射 | `api-reference/image-generation/overview.mdx` |
+| 同步/异步图片示例 | `synchronous.mdx` / `asynchronous.mdx`（不重复 overview 表格） |
+| 首次调用 | `quick-start.mdx`（最小示例） |
+
+## 图片模型（腾讯侧，四款）
+
+`Image-GI` | `Image-GI2` | `Image-GPT2` | `Image-MI` — API 代号；首页展示 Nano Banana Pro / Nano Banana 2 / GPT Image 2 / Midjourney
+
+## 完成后检查
+
+- 是否与其他页面重复？
+- `docs.json` 导航是否需更新？
+- 首页描述是否与 overview 一致？

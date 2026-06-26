@@ -15,31 +15,35 @@ description: "5 分钟完成你的第一次 API 调用"
 
 ## 2. 发送第一个请求
 
+### Gemini 3.1 Flash Lite {#gemini-3-1-flash-lite}
+
+```bash
+curl -X POST https://llm.ziy.cc/v1/chat/completions \
+  -H "Authorization: Bearer sk-你的密钥" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "google/gemini-3.1-flash-lite",
+    "messages": [
+      {"role": "user", "content": "你好，请介绍一下你自己"}
+    ]
+  }'
+```
+
+### DeepSeek-R1-0528 {#deepseek-r1-0528}
+
+```bash
+curl -X POST https://llm.ziy.cc/v1/chat/completions \
+  -H "Authorization: Bearer sk-你的密钥" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "DeepSeek-R1-0528",
+    "messages": [
+      {"role": "user", "content": "你好，请介绍一下你自己"}
+    ]
+  }'
+```
+
 <CodeGroup>
-  ```bash Gemini 2.5 Pro
-  curl -X POST https://llm.ziy.cc/v1/chat/completions \
-    -H "Authorization: Bearer sk-你的密钥" \
-    -H "Content-Type: application/json" \
-    -d '{
-      "model": "google/gemini-2.5-pro-preview-06-05",
-      "messages": [
-        {"role": "user", "content": "你好，请介绍一下你自己"}
-      ]
-    }'
-  ```
-
-  ```bash DeepSeek-R1
-  curl -X POST https://llm.ziy.cc/v1/chat/completions \
-    -H "Authorization: Bearer sk-你的密钥" \
-    -H "Content-Type: application/json" \
-    -d '{
-      "model": "deepseek/deepseek-chat-v3-0324",
-      "messages": [
-        {"role": "user", "content": "你好，请介绍一下你自己"}
-      ]
-    }'
-  ```
-
   ```python Python
   from openai import OpenAI
 
@@ -49,7 +53,7 @@ description: "5 分钟完成你的第一次 API 调用"
   )
 
   response = client.chat.completions.create(
-      model="google/gemini-2.5-pro-preview-06-05",
+      model="google/gemini-3.1-flash-lite",
       messages=[
           {"role": "user", "content": "你好，请介绍一下你自己"}
       ]
@@ -67,7 +71,7 @@ description: "5 分钟完成你的第一次 API 调用"
   });
 
   const response = await client.chat.completions.create({
-      model: "google/gemini-2.5-pro-preview-06-05",
+      model: "google/gemini-3.1-flash-lite",
       messages: [
           { role: "user", content: "你好，请介绍一下你自己" }
       ],
@@ -77,6 +81,10 @@ description: "5 分钟完成你的第一次 API 调用"
   ```
 </CodeGroup>
 
+<Note>
+  `DeepSeek-R1-0528` 是推理模型，响应中会额外包含 `reasoning_content` 字段，用于返回模型的思考过程；最终回答仍在 `content` 字段中。若 `max_tokens` 设置过小，token 预算可能被思考过程占满，导致 `content` 为空。流式模式下，`delta.reasoning_content` 会先于 `delta.content` 返回。
+</Note>
+
 ## 3. 查看响应
 
 成功的响应格式如下：
@@ -85,13 +93,13 @@ description: "5 分钟完成你的第一次 API 调用"
 {
   "id": "chatcmpl-xxxxx",
   "object": "chat.completion",
-  "model": "deepseek/deepseek-chat-v3-0324",
+  "model": "DeepSeek-R1-0528",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "你好！我是 DeepSeek..."
+        "content": "你好！我是 DeepSeek-R1..."
       },
       "finish_reason": "stop"
     }
@@ -116,7 +124,7 @@ description: "5 分钟完成你的第一次 API 调用"
     -H "Authorization: Bearer sk-你的密钥" \
     -H "Content-Type: application/json" \
     -d '{
-      "model": "deepseek/deepseek-chat-v3-0324",
+      "model": "DeepSeek-R1-0528",
       "stream": true,
       "messages": [
         {"role": "user", "content": "用三句话解释量子计算"}
@@ -126,7 +134,7 @@ description: "5 分钟完成你的第一次 API 调用"
 
   ```python Python
   stream = client.chat.completions.create(
-      model="deepseek/deepseek-chat-v3-0324",
+      model="DeepSeek-R1-0528",
       messages=[{"role": "user", "content": "用三句话解释量子计算"}],
       stream=True
   )

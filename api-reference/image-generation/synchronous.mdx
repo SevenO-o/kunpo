@@ -11,6 +11,10 @@ POST https://llm.ziy.cc/v1/images/generations
 
 提交图片生成任务并同步等待结果返回。网关提交后每 2 秒轮询，直至完成（最长约 15 分钟）。
 
+<Note>
+  `model` 参数与对应产品名称：`Image-GI`（Nano Banana Pro）、`Image-GI2`（Nano Banana 2）、`Image-GPT2`（GPT Image 2）、`Image-MI`（Midjourney）。详见 [图片生成概览](/api-reference/image-generation/overview#支持模型)。
+</Note>
+
 ## 请求参数
 
 | 参数 | 类型 | 必填 | 说明 |

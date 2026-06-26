@@ -5,6 +5,7 @@ node_modules/
 .mintlify/
 export.zip
 *.zip
+kunpo-api-docs-export/
 
 # OS files
 .DS_Store
